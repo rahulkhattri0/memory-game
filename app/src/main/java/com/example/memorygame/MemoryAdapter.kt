@@ -51,8 +51,8 @@ class MemoryAdapter(val context : Context, val size : boardsize,val images:List<
                     images[position].identify
                 else
                     R.drawable.ic_launcher_background
-
             )
+            imagebutton.alpha=if(images[position].isMatched) 0.4f else 1.0f //opacity of matched items should be lower to indicate they are matched
          imagebutton.setOnClickListener {
              Log.i("something in the way","clicked at postion $position")
              cardClickListener.onCardClicked(position)
