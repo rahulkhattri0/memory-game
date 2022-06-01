@@ -2,11 +2,11 @@ package com.example.memorygame.models
 
 import com.example.memorygame.utils.default_icons
 
-class memorygame(boardsize: boardsize) {
+class memorygame(val boardsize: boardsize) {
     val list_of_images_mapped:List<MemoryCard>
-    var numberofpairsfound : Int =0
     var indexofSingleselectedcard:Int?=null
     var numpairsfound:Int=0
+    var cardflips:Int=0
 init {
     val chosen_images= default_icons.shuffled().take(boardsize.getpairs())
     val randomimages= (chosen_images + chosen_images).shuffled()
@@ -16,6 +16,7 @@ init {
     print(list_of_images_mapped)
 }
     fun flipcard(pos:Int):Boolean{
+        cardflips++
         val card = list_of_images_mapped[pos]
         var matchfound:Boolean=false
         //three conditions arise here either 0 cards are flipped over or exactly 1 card is flipped over or 2 cards are flipped over
@@ -52,10 +53,14 @@ init {
     }
 
     fun hasWon(): Boolean {
-        return numberofpairsfound == boardsize.Medium.getpairs()
+        return numpairsfound == boardsize.getpairs()
     }
 
     fun isFaceUp(position:Int): Boolean {
         return list_of_images_mapped[position].isFaceUp
+    }
+
+    fun getmoves(): String {
+        return "${cardflips/2}"
     }
 }
