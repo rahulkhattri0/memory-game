@@ -13,7 +13,6 @@ init {
     list_of_images_mapped= randomimages.map { it ->
         MemoryCard(it,false,false)
     }
-    print(list_of_images_mapped)
 }
     fun flipcard(pos:Int):Boolean{
         cardflips++

@@ -8,7 +8,9 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.view.View
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
@@ -24,12 +26,17 @@ class MainActivity : AppCompatActivity() {
     private var tvmoves:TextView? = null
     private var tvpairs:TextView? = null
     private var constraintLayout:ConstraintLayout?=null
-    private var Boardsize: boardsize = boardsize.Medium
+    private var Boardsize: boardsize = boardsize.Easy
     private lateinit var adapter: MemoryAdapter
     private lateinit var memorygame: memorygame
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        rvboard = findViewById(R.id.rvboard)
+        tvmoves = findViewById(R.id.moves)
+        tvpairs = findViewById(R.id.pairs)
+        constraintLayout = findViewById(R.id.main_constraint_layout)
         setupboard()
     }
 
@@ -41,15 +48,59 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
-            R.id.refresh -> if()
+            R.id.refresh -> if((memorygame.cardflips/2) >0 && memorygame.hasWon()==false){
+                showalert("Quit this game?",null)
+            }
+            else{
+                setupboard()
+            }
+            R.id.sizeselector -> showChangeSizeDialog("Change board size :",null)
         }
         return true
     }
+
+    private fun showChangeSizeDialog(title: String, view: View?) {
+        val alertDialog=AlertDialog.Builder(this).setTitle(title).setView(view).setNegativeButton("cancel",null)
+        val items:Array<String> = arrayOf("Easy : 2 X 4","Medium : 3 X 6","Hard : 4 X 6")
+        val selectedItem:Int=0
+        alertDialog.setSingleChoiceItems(items,selectedItem){
+                _,which -> Boardsize = when(which){
+                    0 -> boardsize.Easy
+                    1 -> boardsize.Medium
+                    else -> boardsize.Hard
+                }
+        }
+        alertDialog.setPositiveButton("OK"){
+            _,_ -> setupboard()
+        }
+
+        alertDialog.show()
+
+    }
+
+    private fun showalert(title:String,view: View?) {
+        AlertDialog.Builder(this).setTitle(title).setView(view).setNegativeButton("cancel",null).setPositiveButton("Yes"){
+            _,_ -> setupboard()
+        }.show()
+    }
+
     private fun setupboard() {
-        rvboard = findViewById(R.id.rvboard)
-        tvmoves = findViewById(R.id.moves)
-        tvpairs = findViewById(R.id.pairs)
-        constraintLayout = findViewById(R.id.main_constraint_layout)
+        when(Boardsize){
+            boardsize.Easy -> {
+                tvpairs!!.text = "Pairs: 0/${boardsize.Easy.getpairs()}"
+                tvmoves!!.text = "Easy : 2 X 4"
+            }
+            boardsize.Medium -> {
+                tvpairs!!.text = "Pairs: 0/${boardsize.Medium.getpairs()}"
+                tvmoves!!.text = "Medium : 3 X 6"
+            }
+            boardsize.Hard  -> {
+                tvpairs!!.text = "Pairs: 0/${boardsize.Hard.getpairs()}"
+                tvmoves!!.text = "Hard : 4 X 6"
+            }
+
+        }
+
         memorygame = memorygame(Boardsize)
         adapter = MemoryAdapter(
             this,
