@@ -1,6 +1,7 @@
 package com.example.memorygame
 
 import android.animation.ArgbEvaluator
+import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.memorygame.models.MemoryCard
 import com.example.memorygame.models.boardsize
 import com.example.memorygame.models.memorygame
+import com.example.memorygame.utils.PICKED_BOARD_SIZE
 import com.example.memorygame.utils.default_icons
 import com.google.android.material.snackbar.Snackbar
 
@@ -29,6 +31,9 @@ class MainActivity : AppCompatActivity() {
     private var Boardsize: boardsize = boardsize.Easy
     private lateinit var adapter: MemoryAdapter
     private lateinit var memorygame: memorygame
+    companion object{
+        const val CREATE_REQUEST_CODE:Int = 32
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -55,14 +60,40 @@ class MainActivity : AppCompatActivity() {
                 setupboard()
             }
             R.id.sizeselector -> showChangeSizeDialog("Change board size :",null)
+            R.id.custom_board -> showCreateBoardDialog("Create your own board",null)
         }
         return true
+    }
+
+    private fun showCreateBoardDialog(title: String, view: View?) {
+        val alertDialog=AlertDialog.Builder(this).setTitle(title).setView(view).setNegativeButton("cancel",null)
+        val items:Array<String> = arrayOf("Easy : 2 X 4","Medium : 3 X 6","Hard : 4 X 6")
+        var desiredboardsize:boardsize?=null
+        alertDialog.setSingleChoiceItems(items,-1){
+                _,which -> desiredboardsize = when(which){
+            0 -> boardsize.Easy
+            1 -> boardsize.Medium
+            else -> boardsize.Hard
+        }
+        }
+        alertDialog.setPositiveButton("OK"){
+                _,_ -> val intent = Intent(this,createActivity::class.java)
+            intent.putExtra(/*as this is shared between activities it is better to keep it in the constants file*/PICKED_BOARD_SIZE,desiredboardsize)
+            startActivityForResult(intent,CREATE_REQUEST_CODE)
+        }
+
+        alertDialog.show()
+
     }
 
     private fun showChangeSizeDialog(title: String, view: View?) {
         val alertDialog=AlertDialog.Builder(this).setTitle(title).setView(view).setNegativeButton("cancel",null)
         val items:Array<String> = arrayOf("Easy : 2 X 4","Medium : 3 X 6","Hard : 4 X 6")
-        val selectedItem:Int=0
+        val selectedItem=when(Boardsize){
+            boardsize.Easy -> 0
+            boardsize.Medium -> 1
+            else -> 2
+        }
         alertDialog.setSingleChoiceItems(items,selectedItem){
                 _,which -> Boardsize = when(which){
                     0 -> boardsize.Easy
