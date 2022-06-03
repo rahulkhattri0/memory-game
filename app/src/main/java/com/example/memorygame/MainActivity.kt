@@ -11,11 +11,13 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.e.createActivity
 import com.example.memorygame.models.MemoryCard
 import com.example.memorygame.models.boardsize
 import com.example.memorygame.models.memorygame
@@ -77,9 +79,14 @@ class MainActivity : AppCompatActivity() {
         }
         }
         alertDialog.setPositiveButton("OK"){
-                _,_ -> val intent = Intent(this,createActivity::class.java)
+                _,_ -> if(desiredboardsize==null){
+            Toast.makeText(this,"please select a boardsize", Toast.LENGTH_LONG).show()
+                }
+                    else{
+                        val intent = Intent(this, createActivity::class.java)
             intent.putExtra(/*as this is shared between activities it is better to keep it in the constants file*/PICKED_BOARD_SIZE,desiredboardsize)
             startActivityForResult(intent,CREATE_REQUEST_CODE)
+                    }
         }
 
         alertDialog.show()
