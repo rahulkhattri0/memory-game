@@ -1,32 +1,33 @@
-package com.e
+package com.example.memorygame
 
 import android.Manifest
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
-import com.example.memorygame.CustomCardClicked
-import com.example.memorygame.R
-import com.example.memorygame.createactivityadapter
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
+import android.text.Editable
+import android.text.InputFilter
+import android.text.TextWatcher
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.memorygame.models.boardsize
+import com.example.memorygame.utils.BitmapScaler
 import com.example.memorygame.utils.PICKED_BOARD_SIZE
-import java.net.URI
+import java.io.ByteArrayOutputStream
 
 class createActivity : AppCompatActivity() {
     private lateinit var boardsize: boardsize
@@ -74,15 +75,41 @@ class createActivity : AppCompatActivity() {
         }
         adapter.notifyDataSetChanged()
         supportActionBar!!.title = "Choose pics: ${list_of_uris.size}/${boardsize.getpairs()}"
+        savebutton.isEnabled = shouldSavebeenabled()
 
 
     }
+        private fun shouldSavebeenabled(): Boolean {
+            if(list_of_uris.size < boardsize.getpairs()){
+                return false
+            }
+            if(textfield.text.isBlank() || textfield.text.length <3)
+                return false
+        return true
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create)
         rvimagepicker=findViewById(R.id.image_picker)
         savebutton=findViewById(R.id.savebutton)
+        savebutton.setOnClickListener {
+            saveimagestofirebase()
+        }
         textfield=findViewById(R.id.edit_game_name)
+        textfield.filters = arrayOf(InputFilter.LengthFilter(14))
+        textfield.addTextChangedListener(/*anonymous inner class*/object:TextWatcher{
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) { //useless method for us
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) { //useless method for us
+            }
+
+            override fun afterTextChanged(p0: Editable?){
+                savebutton.isEnabled = shouldSavebeenabled()
+            }
+
+        })
         boardsize = intent.getSerializableExtra(PICKED_BOARD_SIZE) as boardsize //getting the boardsize from the put extra method that we called in the main activity
         supportActionBar!!.title = "Choose pics: 0/${boardsize.getpairs()}"
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
@@ -101,6 +128,30 @@ class createActivity : AppCompatActivity() {
                 }
             })
         rvimagepicker.adapter = adapter
+    }
+
+    private fun saveimagestofirebase() {
+        for ((index:Int , picuri:Uri) in list_of_uris.withIndex()){
+                val byteArray:ByteArray = converttoByteArray(picuri)
+
+        }
+    }
+    //these functions to get the bitmap are provided to us by android and here
+    // we are checking the android version of the device on which the app is running
+    // if it is lower than android pie then something else is called and if it is android pie or greater then something else is called
+    private fun converttoByteArray(picuri: Uri): ByteArray {
+        val originalbitmap = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ){
+            val source = ImageDecoder.createSource(contentResolver,picuri)
+            ImageDecoder.decodeBitmap(source)
+        }
+        else{
+            MediaStore.Images.Media.getBitmap(contentResolver,picuri)
+        }
+        val scaledBitmap = BitmapScaler.scale_To_fit_height(originalbitmap,250)
+        //downscaleing the images is necessary because we only have a limited amount of free storage available in firebase
+        val byteOutputStream = ByteArrayOutputStream()
+        scaledBitmap.compress(Bitmap.CompressFormat.JPEG,60,byteOutputStream)
+        return byteOutputStream.toByteArray()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

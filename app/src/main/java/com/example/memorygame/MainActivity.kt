@@ -14,15 +14,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.e.createActivity
-import com.example.memorygame.models.MemoryCard
 import com.example.memorygame.models.boardsize
 import com.example.memorygame.models.memorygame
 import com.example.memorygame.utils.PICKED_BOARD_SIZE
-import com.example.memorygame.utils.default_icons
 import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity() {

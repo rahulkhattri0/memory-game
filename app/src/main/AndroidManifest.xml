@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Memorygame">
         <activity
-            android:name="com.e.createActivity"
+            android:name=".createActivity"
             android:exported="true" />
         <activity
             android:name=".MainActivity"
