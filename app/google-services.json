@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "122470838164",
+    "project_id": "memory-card-game-269ee",
+    "storage_bucket": "memory-card-game-269ee.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:122470838164:android:632bd0bb60a2af344b6981",
+        "android_client_info": {
+          "package_name": "com.example.memorygame"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "122470838164-kvlrv7500avi8ge3lma4uqfffklau66g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyA95myeyVg7hTjuXCLT0KX-SzfBtCaTY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "122470838164-kvlrv7500avi8ge3lma4uqfffklau66g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
