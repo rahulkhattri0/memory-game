@@ -1,6 +1,7 @@
 package com.example.memorygame.utils
 
 import com.example.memorygame.R
+val EXTRA_GAME_NAME:String = "EXTRA_GAME_NAME"
 val PICKED_BOARD_SIZE:String = "PICKED_BOARD_SIZE"
 val default_icons = listOf(
     R.drawable.ic_face,

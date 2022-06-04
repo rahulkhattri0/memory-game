@@ -1,6 +1,7 @@
 package com.example.memorygame
 
 import android.Manifest
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -16,8 +17,10 @@ import android.text.InputFilter
 import android.text.TextWatcher
 import android.util.Log
 import android.view.MenuItem
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -27,6 +30,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.memorygame.models.boardsize
 import com.example.memorygame.utils.BitmapScaler
+import com.example.memorygame.utils.EXTRA_GAME_NAME
 import com.example.memorygame.utils.PICKED_BOARD_SIZE
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -43,6 +47,7 @@ class createActivity : AppCompatActivity() {
     private lateinit var savebutton: Button
     private lateinit var textfield:EditText
     private lateinit var adapter:createactivityadapter
+    private lateinit var progressBar: ProgressBar
     private val storage = Firebase.storage
     private val database = Firebase.firestore
     private val gallerypicIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI).putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true).setType("image/*")
@@ -104,6 +109,7 @@ class createActivity : AppCompatActivity() {
         setContentView(R.layout.activity_create)
         rvimagepicker=findViewById(R.id.image_picker)
         savebutton=findViewById(R.id.savebutton)
+        progressBar =findViewById(R.id.progress_bar)
         savebutton.setOnClickListener {
             saveimagestofirebase()
         }
@@ -142,42 +148,78 @@ class createActivity : AppCompatActivity() {
     }
 
     private fun saveimagestofirebase() {
-        var failed_to_upload_image = false
+        savebutton.isEnabled=false // to ensure user does not spam the save button
         val customgamename:String = textfield.text.toString()
+        //we need to check two games with the same name do not exist
+        //we hav used on success listenrs to check if the sasme name exists
+        database.collection("games").document(customgamename).get().addOnCompleteListener {  getDocumentTask ->
+            if(getDocumentTask.result !=null && getDocumentTask.result.data !=null){
+                AlertDialog.Builder(this).setMessage("Game with the name '$customgamename' already exists. Please choose another").setTitle("Name Taken").setPositiveButton("OK",null).show()
+                savebutton.isEnabled=true
+            }
+            else{
+                handleUploadofImages(customgamename)
+            }
+        }
+    }
+
+    private fun handleUploadofImages(customgamename: String) {
         val uploadimageurls = mutableListOf<String>()
+        progressBar.visibility = View.VISIBLE
         //in the following for loop we have iterated using two variables and these variables iterate over the list_of_uris list
         // and we have used the withindex() library function
         for ((index:Int , picuri:Uri) in list_of_uris.withIndex()){
-                val byteArray:ByteArray = converttoByteArray(picuri)
+            val byteArray:ByteArray = converttoByteArray(picuri)
             val filepath:String = "images/$customgamename/${System.currentTimeMillis()}-${index}.jpg"
             //the following lines of code are the logic for uploading images to firestore
             val photoreference = storage.reference.child(filepath)
             //putBytes() method is used to upload the bytearray
             //putbytes() is a longer method so continue with task as the name suggests waits for put bytes to finish and then excutes the task defined in the lambda expression
             photoreference.putBytes(byteArray).continueWithTask { uploadtask ->
+                Log.i(TAG,"bytes uploaded ${uploadtask.result.bytesTransferred} at index $index")
                 photoreference.downloadUrl
             }.addOnCompleteListener{
-                downloadurltask -> if(!downloadurltask.isSuccessful){
-                    Toast.makeText(this,"failed to upload image to firestore",Toast.LENGTH_LONG)
-                failed_to_upload_image = true
+                // the return label used in this return statement is used for specifying which function among several nested ones this statement returns from. It works with function literals (lambdas) and local functions.
+                    downloadurltask -> if(!downloadurltask.isSuccessful){
+                Log.i(TAG,"some error")
+                Toast.makeText(this,"failed to upload image to firestore at index $index",Toast.LENGTH_LONG).show()
+                progressBar.visibility = View.GONE
                 return@addOnCompleteListener
             }
-                // the return label used in this return statement is used for specifying which function among several nested ones this statement returns from. It works with function literals (lambdas) and local functions.
-                if(failed_to_upload_image){
-                    return@addOnCompleteListener
-                }
-            val downloadurl = downloadurltask.result.toString()
+
+                val downloadurl:String = downloadurltask.result.toString()
                 uploadimageurls.add(downloadurl)
-                Log.i(TAG,"image uploaded $picuri")
+                Log.i(TAG,"image uploaded $picuri that was at index $index")
+                progressBar.progress = uploadimageurls.size * 100 / list_of_uris.size
+                if(uploadimageurls.size == boardsize.getpairs()){
+                    handleAllimagesUpload(customgamename,uploadimageurls)
+                }
+
             }
-            if(uploadimageurls.size == boardsize.getpairs()){
-                handleAllimagesUpload(customgamename,uploadimageurls)
-            }
+
+
         }
+
     }
 
-    private fun handleAllimagesUpload(text: String, uploadimageurls: MutableList<String>) {
-        //will add later
+    private fun handleAllimagesUpload(gamename: String, uploadimageurls: MutableList<String>) {
+        //firestore database organizes data into collections and documents.Documents live inside a collection.Each document is a separate entity.In
+        // our case document is each memory game that are stored in a collection "games"
+        database.collection("games").document(gamename).set(mapOf("images" to uploadimageurls )).addOnCompleteListener{
+            gamecreationtask ->
+            if(!gamecreationtask.isSuccessful){
+                Log.i(TAG,"some error occured")
+                Toast.makeText(this,"game creation failed",Toast.LENGTH_LONG).show()
+                return@addOnCompleteListener // just a return label
+            }
+            progressBar.visibility = View.GONE
+            Log.i(TAG,"game created with the name $gamename")
+            AlertDialog.Builder(this).setMessage("Your game has been created and click ok to play the game!!").setTitle("game creation success").setPositiveButton("OK"){
+                _,_ -> val data=Intent().putExtra(EXTRA_GAME_NAME,gamename)
+                setResult(Activity.RESULT_OK,data)
+                finish()
+            }.show()
+        }
     }
 
     //these functions to get the bitmap are provided to us by android and here
