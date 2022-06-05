@@ -1,4 +1,4 @@
-package com.example.memorygame
+package com.example.memorygame.models
 
 import android.Manifest
 import android.app.Activity
@@ -25,10 +25,11 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.memorygame.models.boardsize
+import com.example.memorygame.CustomCardClicked
+import com.example.memorygame.R
+import com.example.memorygame.createactivityadapter
 import com.example.memorygame.utils.BitmapScaler
 import com.example.memorygame.utils.EXTRA_GAME_NAME
 import com.example.memorygame.utils.PICKED_BOARD_SIZE
@@ -46,7 +47,7 @@ class createActivity : AppCompatActivity() {
     private lateinit var rvimagepicker:RecyclerView
     private lateinit var savebutton: Button
     private lateinit var textfield:EditText
-    private lateinit var adapter:createactivityadapter
+    private lateinit var adapter: createactivityadapter
     private lateinit var progressBar: ProgressBar
     private val storage = Firebase.storage
     private val database = Firebase.firestore
@@ -153,13 +154,20 @@ class createActivity : AppCompatActivity() {
         //we need to check two games with the same name do not exist
         //we hav used on success listenrs to check if the sasme name exists
         database.collection("games").document(customgamename).get().addOnCompleteListener {  getDocumentTask ->
-            if(getDocumentTask.result !=null && getDocumentTask.result.data !=null){
-                AlertDialog.Builder(this).setMessage("Game with the name '$customgamename' already exists. Please choose another").setTitle("Name Taken").setPositiveButton("OK",null).show()
-                savebutton.isEnabled=true
+            if(getDocumentTask.isSuccessful){
+                if(getDocumentTask.result !=null && getDocumentTask.result.data !=null){
+                    Log.i(TAG,"${getDocumentTask.result.data}")
+                    AlertDialog.Builder(this).setMessage("Game with the name '$customgamename' already exists. Please choose another").setTitle("Name Taken").setPositiveButton("OK",null).show()
+                    savebutton.isEnabled=true
+                }
+                else{
+                    handleUploadofImages(customgamename)
+                }
             }
             else{
-                handleUploadofImages(customgamename)
+                Log.i(TAG,"some error ocurred ")
             }
+
         }
     }
 

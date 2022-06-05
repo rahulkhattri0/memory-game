@@ -4,4 +4,5 @@
 <item android:title="refresh" android:id="@+id/refresh" app:showAsAction="always" android:icon="@drawable/ic_baseline_refresh_24" />
     <item android:title="Change the board size" android:id="@+id/sizeselector" />
     <item android:title="Create custom board" android:id="@+id/custom_board" />
+    <item android:title="Download a custom game" android:id="@+id/download_game" />
 </menu>

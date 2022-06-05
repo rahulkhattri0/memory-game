@@ -1,15 +1,16 @@
 package com.example.memorygame
 
 import android.animation.ArgbEvaluator
+import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.InputType
+import android.text.method.DigitsKeyListener
 import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
+import android.view.*
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -17,20 +18,30 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.memorygame.models.boardsize
+import com.example.memorygame.models.createActivity
 import com.example.memorygame.models.memorygame
+import com.example.memorygame.utils.EXTRA_GAME_NAME
 import com.example.memorygame.utils.PICKED_BOARD_SIZE
+import com.example.memorygame.models.User_image_list
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.squareup.picasso.Picasso
 
 class MainActivity : AppCompatActivity() {
     private var rvboard:RecyclerView? = null
     private var tvmoves:TextView? = null
     private var tvpairs:TextView? = null
+    private val database = Firebase.firestore
+    private var customgame:String? = null
+    private var custom_images_list:List<String>? =null
     private var constraintLayout:ConstraintLayout?=null
     private var Boardsize: boardsize = boardsize.Easy
     private lateinit var adapter: MemoryAdapter
     private lateinit var memorygame: memorygame
     companion object{
         const val CREATE_REQUEST_CODE:Int = 32
+        const val TAG = "MainActivity"
     }
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -59,8 +70,20 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.sizeselector -> showChangeSizeDialog("Change board size :",null)
             R.id.custom_board -> showCreateBoardDialog("Create your own board",null)
+            R.id.download_game -> showDownloadDialog("please enter the name of the game",null)
         }
         return true
+    }
+
+    private fun showDownloadDialog(title: String, view: View?) {
+        val downloadview= LayoutInflater.from(this).inflate(R.layout.edit_text_download,null)
+        val alertDialog =AlertDialog.Builder(this).setTitle(title)
+        alertDialog.setView(downloadview)
+        alertDialog.setPositiveButton("OK"){
+            _,_ -> val edit_text_download = downloadview.findViewById<EditText>(R.id.edit_text_download)
+            downloadgame(edit_text_download.text.toString().trim())
+        }.show()
+
     }
 
     private fun showCreateBoardDialog(title: String, view: View?) {
@@ -89,6 +112,47 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if(requestCode == CREATE_REQUEST_CODE && resultCode == Activity.RESULT_OK){
+            val customgamename = data?.getStringExtra(EXTRA_GAME_NAME)
+            if(customgamename == null){
+                Log.i(TAG,"some error occurred and could not get the custom game name from create activity")
+                return
+            }
+            downloadgame(customgamename)
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+
+    }
+    //in this function the contents of the document can be converted to a data class and this functionality is provied to us by firestore(toObject() method)
+    private fun downloadgame(customgamename: String) {
+        database.collection("games").document(customgamename).get().addOnCompleteListener { documentTask ->
+
+            if(documentTask.isSuccessful){
+                val images_list:User_image_list? =documentTask.result.toObject(User_image_list::class.java)
+                if(images_list == null && images_list?.images == null){
+                    Log.i(TAG,"some error ocurred and we got invalid data")
+                    Snackbar.make(constraintLayout!!,"Sorry no game with the name '$customgamename'",Snackbar.LENGTH_LONG).show()
+                    return@addOnCompleteListener
+                }
+                val numberofcards = images_list!!.images!!.size * 2
+                Boardsize = boardsize.getBoardsize(numberofcards)
+                customgame = customgamename
+                custom_images_list = images_list.images
+                for (imageurl in images_list!!.images!!){
+                    Log.i(TAG,"entered for loop")
+                    Picasso.get().load(imageurl).placeholder(R.drawable.ic_baseline_image_24).fetch()
+                }
+                setupboard()
+            }
+            else{
+                Log.i(TAG,"some error occurred")
+            }
+
+        }
+    }
+
+
     private fun showChangeSizeDialog(title: String, view: View?) {
         val alertDialog=AlertDialog.Builder(this).setTitle(title).setView(view).setNegativeButton("cancel",null)
         val items:Array<String> = arrayOf("Easy : 2 X 4","Medium : 3 X 6","Hard : 4 X 6")
@@ -105,7 +169,10 @@ class MainActivity : AppCompatActivity() {
                 }
         }
         alertDialog.setPositiveButton("OK"){
-            _,_ -> setupboard()
+            _,_ ->
+            custom_images_list =null
+            customgame=null
+            setupboard()
         }
 
         alertDialog.show()
@@ -119,6 +186,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupboard() {
+        if(customgame==null)
+            supportActionBar!!.title = getString(R.string.app_name)
+        else
+            supportActionBar!!.title = customgame
         when(Boardsize){
             boardsize.Easy -> {
                 tvpairs!!.text = "Pairs: 0/${boardsize.Easy.getpairs()}"
@@ -135,7 +206,7 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        memorygame = memorygame(Boardsize)
+        memorygame = memorygame(Boardsize,custom_images_list)
         adapter = MemoryAdapter(
             this,
             Boardsize,

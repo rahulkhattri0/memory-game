@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/memorygame/app/src/main/res/drawable/ic_baseline_image_24.xml" value="0.1" />
         <entry key="..\:/memorygame/app/src/main/res/drawable/ic_baseline_refresh_24.xml" value="0.21076923076923076" />
         <entry key="..\:/memorygame/app/src/main/res/drawable/ic_face.xml" value="0.1" />
         <entry key="..\:/memorygame/app/src/main/res/drawable/ic_launcher_background.xml" value="0.20925925925925926" />
@@ -10,6 +11,7 @@
         <entry key="..\:/memorygame/app/src/main/res/layout/activity_main.xml" value="0.176" />
         <entry key="..\:/memorygame/app/src/main/res/layout/card.xml" value="0.1" />
         <entry key="..\:/memorygame/app/src/main/res/layout/card_image.xml" value="0.18020833333333333" />
+        <entry key="..\:/memorygame/app/src/main/res/layout/edit_text_download.xml" value="0.171875" />
         <entry key="..\:/memorygame/app/src/main/res/menu/menu_item_main.xml" value="0.25416666666666665" />
       </map>
     </option>

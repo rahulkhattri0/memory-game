@@ -4,7 +4,15 @@ enum class boardsize( var numcards :Int) {
     Easy(8),
     Medium(18),
     Hard(24);
-
+    //the below lilnes of code do not depend on the enum objects
+    companion object{
+        fun getBoardsize(value:Int):boardsize{
+            val boardsize=boardsize.values().first{
+                it.numcards==value
+            }
+            return boardsize
+        }
+    }
 
     fun getwidth() : Int{
         return when(this) {

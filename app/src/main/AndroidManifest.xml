@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Memorygame">
         <activity
-            android:name=".createActivity"
+            android:name=".models.createActivity"
             android:exported="true" />
         <activity
             android:name=".MainActivity"
