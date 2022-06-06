@@ -49,7 +49,7 @@ class MemoryAdapter(val context : Context, val size : boardsize,val images:List<
         fun bind(position: Int) {
                 if(images[position].isFaceUp){
                     if(images[position].cardimageurl!=null)
-                    Picasso.get().load(images[position].cardimageurl).into(imagebutton)
+                    Picasso.get().load(images[position].cardimageurl).placeholder(R.drawable.ic_baseline_image_24).into(imagebutton)
                     else
                         imagebutton.setImageResource(images[position].identify)
                 }

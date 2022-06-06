@@ -26,7 +26,9 @@ import com.example.memorygame.models.User_image_list
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
+import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
     private var rvboard:RecyclerView? = null
@@ -141,8 +143,18 @@ class MainActivity : AppCompatActivity() {
                 custom_images_list = images_list.images
                 for (imageurl in images_list!!.images!!){
                     Log.i(TAG,"entered for loop")
-                    Picasso.get().load(imageurl).placeholder(R.drawable.ic_baseline_image_24).fetch()
+                    Picasso.get().load(imageurl).fetch(object:Callback{
+                        override fun onSuccess() {
+                            Log.i(TAG,"FETCHED URLS")
+                        }
+
+                        override fun onError(e: Exception?) {
+                            Log.i(TAG,"$e")
+                        }
+
+                    })
                 }
+                Snackbar.make(constraintLayout!!,"You're playing the game $customgamename!!!",Snackbar.LENGTH_LONG).show()
                 setupboard()
             }
             else{
