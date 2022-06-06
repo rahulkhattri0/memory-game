@@ -84,8 +84,12 @@ class MainActivity : AppCompatActivity() {
         val alertDialog =AlertDialog.Builder(this).setTitle(title)
         alertDialog.setView(downloadview)
         alertDialog.setPositiveButton("OK"){
-            _,_ -> val edit_text_download = downloadview.findViewById<EditText>(R.id.edit_text_download)
-            downloadgame(edit_text_download.text.toString().trim())
+            _,_ ->
+            val edit_text_download:EditText = downloadview.findViewById<EditText>(R.id.edit_text_download)
+            if (edit_text_download.text.toString().equals(""))
+                Toast.makeText(this,"Please enter a game name",Toast.LENGTH_LONG).show()
+            else
+                downloadgame(edit_text_download.text.toString().trim())
         }.show()
 
     }
