@@ -15,6 +15,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.memorygame.models.boardsize
@@ -37,7 +38,7 @@ class MainActivity : AppCompatActivity() {
     private val database = Firebase.firestore
     private var customgame:String? = null
     private var custom_images_list:List<String>? =null
-    private var constraintLayout:ConstraintLayout?=null
+    private var constraintLayout:CoordinatorLayout?=null
     private var Boardsize: boardsize = boardsize.Easy
     private lateinit var adapter: MemoryAdapter
     private lateinit var memorygame: memorygame
