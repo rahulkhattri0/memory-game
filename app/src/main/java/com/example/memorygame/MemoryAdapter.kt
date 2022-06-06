@@ -54,7 +54,7 @@ class MemoryAdapter(val context : Context, val size : boardsize,val images:List<
                         imagebutton.setImageResource(images[position].identify)
                 }
                 else{
-                 imagebutton.setImageResource(R.drawable.ic_launcher_background)
+                 imagebutton.setImageResource(R.drawable.ic_card_down)
                 }
             imagebutton.alpha=if(images[position].isMatched) 0.4f else 1.0f //opacity of matched items should be lower to indicate they are matched
          imagebutton.setOnClickListener {

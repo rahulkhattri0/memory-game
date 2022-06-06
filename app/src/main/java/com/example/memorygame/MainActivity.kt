@@ -24,6 +24,7 @@ import com.example.memorygame.models.memorygame
 import com.example.memorygame.utils.EXTRA_GAME_NAME
 import com.example.memorygame.utils.PICKED_BOARD_SIZE
 import com.example.memorygame.models.User_image_list
+import com.github.jinatonic.confetti.CommonConfetti
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -235,11 +236,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updategamewithflip(position: Int) {
-//        if (memorygame.hasWon())
-//        {
-//            Snackbar.make(constraintLayout!!,"you have won the game",Snackbar.LENGTH_LONG).show()
-//            return
-//        }
         if(memorygame.isFaceUp(position)){
             Snackbar.make(constraintLayout!!,"Invalid move",Snackbar.LENGTH_SHORT).show()
             return
@@ -254,6 +250,8 @@ class MainActivity : AppCompatActivity() {
             tvpairs!!.setTextColor(color)
             tvpairs!!.text= "PAIRS: ${memorygame.numpairsfound}/${Boardsize.getpairs()}"
             if(memorygame.hasWon()){
+                //confetti library : https://github.com/jinatonic/confetti
+                CommonConfetti.rainingConfetti(constraintLayout, intArrayOf(Color.RED,Color.GREEN,Color.MAGENTA)).oneShot()
                 Snackbar.make(constraintLayout!!,"you have won the game!congrats",Snackbar.LENGTH_LONG).show()
             }
         }
